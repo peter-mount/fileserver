@@ -113,25 +113,32 @@ As an advanced configuration, here's how to create a simple Map Tile proxy to Op
 
 ```json
 {
-    "httpd": {
-        "port": 80
-    },
-
     "filesystems": ["tiles"],
 
     "filesystem": {
-        "tiles": {
-            "uri":"local://test",
-            "prefix":"test"
-        }
-    }
+	"tiles": {
+	    "name":"tiles",
+	    "uri":"cache://tiles",
+	    "prefix":"tiles",
+	    "environment": {
+		"fileSystemType":"cache",
+		"remoteUrl": "http://c.tile.openstreetmap.org/",
+		"fileSystemWrapper": "http",
+		"maxAge": 172800000,
+		"scanDelay": 3600000,
+		"expireOnStartup": true
+	    }
+	}
+    },
 }
 ```
 
-and filesystem/test.json:
-``` json
-{
-    "uri":"local://test",
-    "prefix":"test"
-}
+Now running this and running wget against it:
+``` java
+wget http://127.0.0.1:8080/tiles/13/4107/2732.png -O 2732.png
 ```
+
+You end up with:
+![Maidstone](2732.png)
+
+Now once an hour (scanDelay) it will look for entries that are 2 days old (maxAge) and remove them. Until then it will serve it's local copy, so we only hit the remote server just once.
