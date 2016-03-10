@@ -1,0 +1,37 @@
+#!/bin/ash
+#
+# Run's the utility application within docker
+#
+# The installation location. usually it's where this file is.
+# Edit if it's in a different location.
+DIR=$(dirname $0)
+
+# ============================================================
+# JVM configuration
+# Include jul logging config
+OPTS="$OPTS -Djava.util.logging.config.file=${DIR}/logging.properties"
+
+# Uncomment to enforce running within the GMT timezone
+if [ -n "$TIMEZONE" ]
+then
+    OPTS="$OPTS -Duser.timezone=$TIMEZONE"
+fi
+
+# Uncomment to use a debugger
+if [ -n "$RUNJDWP" ]
+then
+    OPTS="$OPTS -Xdebug -Xrunjdwp:transport=dt_socket,address=$RUNJDWP,server=y,suspend=y"
+fi
+
+# IPV6 on name lookups?
+if [ -n "$PREFER_IPv6_ADDRESSES" ]
+then
+    OPTS="$OPTS -Djava.net.preferIPv6Addresses=true"
+fi
+
+# ============================================================
+# Do not edit below this point
+# ============================================================
+# Add the final class path
+OPTS="$OPTS -cp $(echo $(ls $DIR/lib/*.jar)|sed "s/ /:/g")"
+exec java $OPTS uk.trainwatch.kernel.Main $@
