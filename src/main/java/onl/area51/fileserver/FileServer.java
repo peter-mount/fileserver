@@ -45,7 +45,7 @@ import uk.trainwatch.util.config.ConfigurationService;
 public class FileServer
 {
 
-    private static final Logger LOG = Logger.getLogger( FileServer.class.getName() );
+    private static final Logger LOG = Logger.getLogger( "FileServer" );
 
     @Inject
     private ConfigurationService configurationService;
@@ -77,8 +77,7 @@ public class FileServer
 
         try {
             logLevel = Level.parse( mainConfig.getString( "logLevel", logLevel.getName() ) );
-        }
-        catch( NullPointerException ex ) {
+        } catch( NullPointerException ex ) {
         }
 
         mountFileSystems();
@@ -88,8 +87,7 @@ public class FileServer
 
         try {
             server.start();
-        }
-        catch( IOException ex ) {
+        } catch( IOException ex ) {
             throw new UncheckedIOException( ex );
         }
 
@@ -97,7 +95,8 @@ public class FileServer
     }
 
     /**
-     * Mount all file systems either from "filesystem" object in the main config or individual "filesystem_" + name +".json" files.
+     * Mount all file systems either from "filesystem" object in the main config or individual "filesystem_" + name +".json"
+     * files.
      */
     private void mountFileSystems()
     {
@@ -136,9 +135,10 @@ public class FileServer
                 .setExceptionLogger( ex -> LOG.log( Level.SEVERE, null, ex ) )
                 .shutdown( httpdConfig.getLong( "shutdown.time", 5L ), httpdConfig.getEnum( "shutdown.unit", TimeUnit.class, TimeUnit.SECONDS ) )
                 .registerHandler( "*", HttpRequestHandlerBuilder.create()
+                                  // Log all requests
+                                  .log( LOG, logLevel )
                                   // Normal GET requests
                                   .method( "GET" )
-                                  .log( LOG, logLevel )
                                   .add( PathHttpActionBuilder.create()
                                           .assertPathExists()
                                           .returnPathContent()
@@ -146,10 +146,15 @@ public class FileServer
                                   .end()
                                   // HEAD requests
                                   .method( "HEAD" )
-                                  .log( LOG, logLevel )
                                   .add( PathHttpActionBuilder.create()
                                           .assertPathExists()
                                           .returnPathSizeOnly()
+                                          .build( fileSystemMap ) )
+                                  .end()
+                                  // POST
+                                  .method( "PUT" )
+                                  .add( PathHttpActionBuilder.create()
+                                          .saveContent()
                                           .build( fileSystemMap ) )
                                   .end()
                                   //
