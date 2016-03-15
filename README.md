@@ -69,6 +69,7 @@ Environment Variable | Default value | Purpose
 -------------------- | ------------- | -------
 CONFIGURATION_DIR | /opt/fileserver/etc | the location in the image of the configuration files
 FILESYSTEM_BASE | /opt/fileserver/data | the location in the image of where the filesystems are stored
+AWS_CREDENTIAL_PROFILES_FILE | /opt/fileserver/etc/.aws | the location of the AWS credentials. Only required if proxying S3 buckets.
 PREFER_IPv6_ADDRESSES | _not defined_ | Set if you want the fileserver to prefer IPv6 addresses when performing DNS lookups. This is the equivalent of passing -Djava.net.preferIPv6Addresses=true to the JVM.
 TIMEZONE | time zone of host | Set the timezone of the server
 RUNJDWP | _not defined_ | If set the port to listen for a debugger to attach. The server will not start until the debugger attaches if this is set
@@ -142,3 +143,36 @@ You end up with:
 ![Maidstone](2732.png)
 
 Now once an hour (scanDelay) it will look for entries that are 2 days old (maxAge) and remove them. Until then it will serve it's local copy, so we only hit the remote server just once.
+
+## Proxying S3 buckets
+
+You can now proxy a Amazon S3 bucket. This is simply a filesystem with an S3 bucket configured as the remote file store.
+
+The minimum environment entries you need are: fileSystemWrapper set to s3read and bucket containing your bucket name. Like the previous example you can set the cache expiry settings. If an entry is expired then it will go back to S3 to retrieve the object.
+
+```json
+{
+    "filesystems": ["bucket"],
+
+    "filesystem": {
+	"bucket": {
+	    "name":"bucket",
+	    "uri":"cache://bucket",
+	    "prefix":"bucket",
+	    "environment": {
+		"fileSystemWrapper": "s3read",
+		"bucket": "my.bucket"
+	    }
+	}
+    },
+}
+```
+
+You also need to put your AWS credentials in the .aws file within the config directory.
+
+Now running this and running wget against it:
+``` java
+wget http://127.0.0.1:8080/bucket/someobject -O someobject
+```
+
+You will then retrieve that object from Amazon S3, but it will now be cached locally. This is useful as it costs to retrieve an object from S3, so it can save you money by providing a local cache of regularly used objects.
