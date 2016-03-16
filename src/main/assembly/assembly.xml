@@ -8,31 +8,13 @@
     <formats>
         <format>tar</format>
     </formats>
-    <baseDirectory>fileserver</baseDirectory>
+    <includeBaseDirectory>false</includeBaseDirectory>
     <dependencySets>
         <dependencySet>
-            <outputDirectory>/lib</outputDirectory>
+            <outputDirectory>/</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>
             <unpack>false</unpack>
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
-    <fileSets>
-        <fileSet>
-            <directory>src/main/assembly</directory>
-            <outputDirectory>/</outputDirectory>
-            <fileMode>0755</fileMode>
-            <includes>
-                <include>fileserver</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/assembly</directory>
-            <outputDirectory>/</outputDirectory>
-            <fileMode>0644</fileMode>
-            <includes>
-                <include>logging.properties</include>
-            </includes>
-        </fileSet>
-    </fileSets>
 </assembly>
