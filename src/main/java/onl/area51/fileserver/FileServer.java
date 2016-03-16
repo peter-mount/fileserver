@@ -27,20 +27,15 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import onl.area51.httpd.HttpRequestHandlerBuilder;
 import org.apache.http.config.SocketConfig;
-import uk.trainwatch.kernel.CommandArguments;
 import onl.area51.filesystem.http.server.FileSystemMap;
 import onl.area51.filesystem.http.server.PathHttpActionBuilder;
 import onl.area51.httpd.HttpServer;
 import onl.area51.httpd.HttpServerBuilder;
+import onl.area51.kernel.CommandArguments;
 import uk.trainwatch.util.Functions;
 import uk.trainwatch.util.config.Configuration;
 import uk.trainwatch.util.config.ConfigurationService;
 
-/**
- * Handles the booting of the MapGen cluster node
- *
- * @author peter
- */
 @ApplicationScoped
 public class FileServer
 {
