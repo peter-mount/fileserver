@@ -10,4 +10,4 @@ ENV FILESYSTEM_BASE                 /opt/fileserver/data
 # Default location of AWS credentials if S3 is used
 ENV AWS_CREDENTIAL_PROFILES_FILE    /opt/fileserver/etc/.aws
 
-ADD ${project.build.finalName}-assembly.tar /opt/kernel/lib/${project.artifactId}
+ADD ${project.build.finalName}-assembly.tar /opt/kernel/
