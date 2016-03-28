@@ -17,11 +17,9 @@ package onl.area51.fileserver;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.spi.FileSystemProvider;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -62,17 +60,6 @@ public class FileServer
      */
     public void boot( @Observes CommandArguments args )
     {
-        // Nothing to do here, it's presence ensures the bean is instantiated by CDI
-        Logger.getGlobal().info( "Installed providers" );
-        
-        FileSystemProvider.installedProviders()
-                .forEach( p -> Logger.getGlobal().info( "Provider " + p.getScheme() + " " + p ) );
-        
-//    }
-//
-//    @PostConstruct
-//    void start()
-//    {
         mainConfig = configurationService.getConfiguration( "fileserver" );
         httpdConfig = mainConfig.getConfiguration( "httpd" );
 
