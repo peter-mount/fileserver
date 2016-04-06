@@ -24,8 +24,10 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Observes;
 import onl.area51.filesystem.http.server.FileSystemFactory;
 import onl.area51.httpd.HttpRequestHandlerBuilder;
-import onl.area51.filesystem.http.server.PathHttpActionBuilder;
 import onl.area51.httpd.action.ActionRegistry;
+import onl.area51.filesystem.http.server.SaveContentAction;
+import onl.area51.httpd.util.PathEntity;
+import org.apache.http.HttpStatus;
 import uk.trainwatch.util.Functions;
 import uk.trainwatch.util.config.Configuration;
 import uk.trainwatch.util.config.ConfigurationService;
@@ -62,34 +64,30 @@ public class FileServer
                         FileSystem fileSystem = FileSystemFactory.getFileSystem( fs );
 
                         registry.registerHandler( prefix + "*", HttpRequestHandlerBuilder.create()
-                                                  // Log all requests
-                                                  .log( LOG, Level.INFO )
+                                                  .unscoped()
                                                   // Normal GET requests
                                                   .method( "GET" )
-                                                  .add( FileSystemFactory.getPathAction( fileSystem,
-                                                                                         PathHttpActionBuilder.create()
-                                                                                         .assertPathExists()
-                                                                                         .returnPathContent()
-                                                                                         .build() ) )
+                                                  .add( FileSystemFactory.extractPath( fileSystem ) )
+                                                  .ifAttributePresentSendOk( "path", PathEntity::create )
+                                                  .ifAttributeAbsentSendError( "path", HttpStatus.SC_NOT_FOUND )
                                                   .end()
                                                   // HEAD requests
                                                   .method( "HEAD" )
-                                                  .add( FileSystemFactory.getPathAction( fileSystem,
-                                                                                         PathHttpActionBuilder.create()
-                                                                                         .assertPathExists()
-                                                                                         .returnPathSizeOnly()
-                                                                                         .build() ) )
+                                                  .add( FileSystemFactory.extractPath( fileSystem ) )
+                                                  .ifAttributePresentSendOk( "path", PathEntity::createSizeOnly )
+                                                  .ifAttributeAbsentSendError( "path", HttpStatus.SC_NOT_FOUND )
                                                   .end()
                                                   // POST
                                                   .method( "PUT" )
-                                                  .add( FileSystemFactory.getPathAction( fileSystem,
-                                                                                         PathHttpActionBuilder.create()
-                                                                                         .saveContent()
-                                                                                         .build() ) )
+                                                  .add( FileSystemFactory.extractPath( fileSystem ) )
+                                                  .ifAttributePresent( "path", new SaveContentAction() )
+                                                  .ifAttributeAbsentSendError( "path", HttpStatus.SC_NOT_FOUND )
                                                   .end()
                                                   //
                                                   .build() );
-                    } catch( IOException | URISyntaxException ex ) {
+                    }
+                    catch( IOException |
+                           URISyntaxException ex ) {
                         LOG.log( Level.SEVERE, ex, () -> "Failed to register " + prefix );
                     }
                 } );
