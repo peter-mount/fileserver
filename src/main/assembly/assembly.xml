@@ -24,7 +24,7 @@
                 <include>onl.area51.filesystem:*</include>
                 <!-- http dependencies -->
                 <include>org.apache.httpcomponents:*</include>
-                <include>onl.area51.httpd:*</include>
+                <include>onl.area51.httpd:area51-httpd</include>
                 <!-- S3 dependencies -->
                 <include>com.amazonaws:*</include>
                 <include>com.fasterxml.jackson.core:*</include>
@@ -45,7 +45,7 @@
                 <exclude>onl.area51.filesystem:*</exclude>
                 <!-- http dependencies -->
                 <exclude>org.apache.httpcomponents:*</exclude>
-                <exclude>onl.area51.httpd:*</exclude>
+                <exclude>onl.area51.httpd:area51-httpd</exclude>
                 <!-- S3 dependencies -->
                 <exclude>com.amazonaws:*</exclude>
                 <exclude>com.fasterxml.jackson.core:*</exclude>

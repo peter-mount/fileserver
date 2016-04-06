@@ -16,147 +16,82 @@
 package onl.area51.fileserver;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.concurrent.TimeUnit;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Observes;
-import javax.inject.Inject;
+import onl.area51.filesystem.http.server.FileSystemFactory;
 import onl.area51.httpd.HttpRequestHandlerBuilder;
-import org.apache.http.config.SocketConfig;
-import onl.area51.filesystem.http.server.FileSystemMap;
 import onl.area51.filesystem.http.server.PathHttpActionBuilder;
-import onl.area51.httpd.HttpServer;
-import onl.area51.httpd.HttpServerBuilder;
-import onl.area51.kernel.CommandArguments;
+import onl.area51.httpd.action.ActionRegistry;
 import uk.trainwatch.util.Functions;
 import uk.trainwatch.util.config.Configuration;
 import uk.trainwatch.util.config.ConfigurationService;
 
-@ApplicationScoped
+@Dependent
 public class FileServer
 {
 
     private static final Logger LOG = Logger.getLogger( "FileServer" );
 
-    @Inject
-    private ConfigurationService configurationService;
-    private Configuration mainConfig;
-    private Configuration httpdConfig;
-
-    private Level logLevel = Level.INFO;
-
-    private FileSystemMap fileSystemMap;
-    private HttpServer server;
-    private int port;
-    private String serverInfo;
-
     /**
      * Instantiate this bean on startup.
      *
-     * @param args
+     * @param registry
+     * @param configurationService
      */
-    public void boot( @Observes CommandArguments args )
+    public void deploy( @Observes ActionRegistry registry, ConfigurationService configurationService )
     {
-        mainConfig = configurationService.getConfiguration( "fileserver" );
-        httpdConfig = mainConfig.getConfiguration( "httpd" );
+        Configuration mainConfig = configurationService.getConfiguration( "fileserver" );
 
-        try {
-            logLevel = Level.parse( mainConfig.getString( "logLevel", logLevel.getName() ) );
-        } catch( NullPointerException ex ) {
-        }
-
-        mountFileSystems();
-        createServer();
-
-        LOG.log( Level.INFO, () -> "Starting http server " + serverInfo + " on port " + port );
-
-        try {
-            server.start();
-        } catch( IOException ex ) {
-            throw new UncheckedIOException( ex );
-        }
-
-        LOG.log( Level.INFO, () -> "Started http server " + serverInfo + " on port " + port );
-    }
-
-    /**
-     * Mount all file systems either from "filesystem" object in the main config or individual "filesystem_" + name +".json"
-     * files.
-     */
-    private void mountFileSystems()
-    {
         LOG.log( Level.INFO, "Mounting filesystems" );
 
         Configuration fileSystemConfig = mainConfig.getConfiguration( "filesystem" );
-        fileSystemMap = FileSystemMap.builder()
-                .addFileSystems( mainConfig.collection( "filesystems" )
-                        .map( Functions.castTo( String.class ) )
-                        .map( n -> fileSystemConfig.getConfiguration( n, () -> configurationService.getConfiguration( "filesystem_" + n ) ) )
-                )
-                .build();
 
-        if( LOG.isLoggable( logLevel ) ) {
-            fileSystemMap.prefixes()
-                    .sorted( String.CASE_INSENSITIVE_ORDER )
-                    .forEach( s -> LOG.log( logLevel, s ) );
-        }
-    }
+        mainConfig.collection( "filesystems" )
+                .map( Functions.castTo( String.class ) )
+                .map( n -> fileSystemConfig.getConfiguration( n, () -> configurationService.getConfiguration( "filesystem_" + n ) ) )
+                .forEach( fs -> {
+                    String prefix = FileSystemFactory.getPrefix( fs );
 
-    private void createServer()
-    {
-        port = httpdConfig.getInt( "port", 8080 );
-        serverInfo = httpdConfig.getString( "serverInfo", "Area51/1.1" );
+                    LOG.log( Level.INFO, () -> "Registring filesystem " + prefix );
 
-        LOG.log( Level.INFO, () -> "Creating http server " + serverInfo + " on port " + port );
+                    try {
+                        FileSystem fileSystem = FileSystemFactory.getFileSystem( fs );
 
-        server = HttpServerBuilder.builder()
-                .setSocketConfig( SocketConfig.custom()
-                        .setSoTimeout( httpdConfig.getInt( "socket.soTimeout", 15000 ) )
-                        .setTcpNoDelay( httpdConfig.getBoolean( "socket.tcpNoDelay", true ) )
-                        .build() )
-                .setListenerPort( port )
-                .setServerInfo( serverInfo )
-                .setSslContext( null )
-                .setExceptionLogger( ex -> LOG.log( Level.SEVERE, null, ex ) )
-                .shutdown( httpdConfig.getLong( "shutdown.time", 5L ), httpdConfig.getEnum( "shutdown.unit", TimeUnit.class, TimeUnit.SECONDS ) )
-                .registerHandler( "*", HttpRequestHandlerBuilder.create()
-                                  // Log all requests
-                                  .log( LOG, logLevel )
-                                  // Normal GET requests
-                                  .method( "GET" )
-                                  .add( PathHttpActionBuilder.create()
-                                          .assertPathExists()
-                                          .returnPathContent()
-                                          .build( fileSystemMap ) )
-                                  .end()
-                                  // HEAD requests
-                                  .method( "HEAD" )
-                                  .add( PathHttpActionBuilder.create()
-                                          .assertPathExists()
-                                          .returnPathSizeOnly()
-                                          .build( fileSystemMap ) )
-                                  .end()
-                                  // POST
-                                  .method( "PUT" )
-                                  .add( PathHttpActionBuilder.create()
-                                          .saveContent()
-                                          .build( fileSystemMap ) )
-                                  .end()
-                                  //
-                                  .build() )
-                .build();
-    }
-
-    @PreDestroy
-    void stop()
-    {
-        LOG.log( Level.INFO, () -> "Shutting down http server " + serverInfo + " on port " + port );
-
-        server.stop();
-
-        LOG.log( Level.INFO, () -> "Shut down http server " + serverInfo + " on port " + port );
+                        registry.registerHandler( prefix + "*", HttpRequestHandlerBuilder.create()
+                                                  // Log all requests
+                                                  .log( LOG, Level.INFO )
+                                                  // Normal GET requests
+                                                  .method( "GET" )
+                                                  .add( FileSystemFactory.getPathAction( fileSystem,
+                                                                                         PathHttpActionBuilder.create()
+                                                                                         .assertPathExists()
+                                                                                         .returnPathContent()
+                                                                                         .build() ) )
+                                                  .end()
+                                                  // HEAD requests
+                                                  .method( "HEAD" )
+                                                  .add( FileSystemFactory.getPathAction( fileSystem,
+                                                                                         PathHttpActionBuilder.create()
+                                                                                         .assertPathExists()
+                                                                                         .returnPathSizeOnly()
+                                                                                         .build() ) )
+                                                  .end()
+                                                  // POST
+                                                  .method( "PUT" )
+                                                  .add( FileSystemFactory.getPathAction( fileSystem,
+                                                                                         PathHttpActionBuilder.create()
+                                                                                         .saveContent()
+                                                                                         .build() ) )
+                                                  .end()
+                                                  //
+                                                  .build() );
+                    } catch( IOException | URISyntaxException ex ) {
+                        LOG.log( Level.SEVERE, ex, () -> "Failed to register " + prefix );
+                    }
+                } );
     }
 }
