@@ -79,7 +79,7 @@ public class FileServer
                                                   .end()
                                                   // POST
                                                   .method( "PUT" )
-                                                  .add( FileSystemFactory.extractPath( fileSystem ) )
+                                                  .add( FileSystemFactory.extractPathMayNotExist( fileSystem ) )
                                                   .ifAttributePresent( "path", new SaveContentAction() )
                                                   .ifAttributeAbsentSendError( "path", HttpStatus.SC_NOT_FOUND )
                                                   .end()
