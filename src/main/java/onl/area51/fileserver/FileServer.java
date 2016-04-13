@@ -65,6 +65,7 @@ public class FileServer
 
                         registry.registerHandler( prefix + "*", HttpRequestHandlerBuilder.create()
                                                   .unscoped()
+                                                  .log()
                                                   // Normal GET requests
                                                   .method( "GET" )
                                                   .add( FileSystemFactory.extractPath( fileSystem ) )
