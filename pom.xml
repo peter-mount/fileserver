@@ -132,11 +132,7 @@
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>0.2.3</version>
                 <configuration>
-                    <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
-                    <imageTags>
-                        <imageTag>latest</imageTag>
-                        <imageTag>${project.version}</imageTag>
-                    </imageTags>
+                    <imageName>${docker.image.prefix}/${project.artifactId}:latest</imageName>
                     <dockerDirectory>${project.build.directory}/docker.temp</dockerDirectory>
                     <resources>
                         <resource>
