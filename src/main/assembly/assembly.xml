@@ -10,50 +10,11 @@
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
     <dependencySets>
-
-        <!--
-            Due to filesystems requiring to be in the main classloader to work
-            we have to install them in the ext directory to work
-        -->
-        <dependencySet>
-            <outputDirectory>/ext</outputDirectory>
-            <useProjectArtifact>true</useProjectArtifact>
-            <unpack>false</unpack>
-            <scope>runtime</scope>
-            <includes>
-                <include>onl.area51.filesystem:*</include>
-                <!-- http dependencies -->
-                <include>org.apache.httpcomponents:*</include>
-                <include>onl.area51.httpd:area51-httpd</include>
-                <!-- S3 dependencies -->
-                <include>com.amazonaws:*</include>
-                <include>com.fasterxml.jackson.core:*</include>
-                <include>commons-codec:*</include>
-                <include>commons-logging:*</include>
-                <include>joda-time:*</include>
-            </includes>
-        </dependencySet>
-        
-        <!-- main application minus those in /ext above -->
         <dependencySet>
             <outputDirectory>/lib/fileserver</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>
             <unpack>false</unpack>
             <scope>runtime</scope>
-            <!-- due to filesystems requiring to be in the main classloader to work -->
-            <excludes>
-                <exclude>onl.area51.filesystem:*</exclude>
-                <!-- http dependencies -->
-                <exclude>org.apache.httpcomponents:*</exclude>
-                <exclude>onl.area51.httpd:area51-httpd</exclude>
-                <!-- S3 dependencies -->
-                <exclude>com.amazonaws:*</exclude>
-                <exclude>com.fasterxml.jackson.core:*</exclude>
-                <exclude>commons-codec:*</exclude>
-                <exclude>commons-logging:*</exclude>
-                <exclude>joda-time:*</exclude>
-            </excludes>
         </dependencySet>
-        
     </dependencySets>
 </assembly>

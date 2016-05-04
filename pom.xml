@@ -43,6 +43,7 @@
         <dependency>
             <groupId>onl.area51.filesystem</groupId>
             <artifactId>filesystem-cdi</artifactId>
+            <artifactId>filesystem-minio</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         
