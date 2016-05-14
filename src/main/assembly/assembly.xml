@@ -17,4 +17,14 @@
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
+    <fileSets>
+        <fileSet>
+            <directory>src/main/assembly</directory>
+            <outputDirectory>/start.d</outputDirectory>
+            <fileMode>0755</fileMode>
+            <includes>
+                <include>10gpg.sh</include>
+            </includes>
+        </fileSet>
+    </fileSets>
 </assembly>

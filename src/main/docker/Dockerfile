@@ -13,7 +13,9 @@ ENV AWS_CREDENTIAL_PROFILES_FILE    /opt/fileserver/etc/.aws
 RUN apk add --update \
         tar \
         dpkg \
-        dpkg-dev &&\
+        dpkg-dev \
+        gnupg \
+        &&\
     rm -rf /var/cache/apk/*
 
 ADD ${project.build.finalName}-assembly.tar /opt/kernel/
