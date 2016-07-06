@@ -1,8 +1,20 @@
 FROM area51/kernel
 MAINTAINER Peter Mount <peter@retep.org>
 
+# Project version to build
 ENV FILESERVER_VERSION 1.0-SNAPSHOT
+
+# Maven version to use in building the image
 ENV MAVEN_VERSION  3.3.9
+
+# Default configuration file location
+ENV CONFIGURATION_DIR               /opt/fileserver/etc
+
+# Default cache base directory
+ENV FILESYSTEM_BASE                 /opt/fileserver/data
+
+# Default location of AWS credentials if S3 is used
+ENV AWS_CREDENTIAL_PROFILES_FILE    /opt/fileserver/etc/.aws
 
 RUN apk add --update \
         tar \
