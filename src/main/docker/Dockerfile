@@ -1,4 +1,4 @@
-FROM area51/kernel:latest-opendata
+FROM area51/kernel:latest
 MAINTAINER Peter Mount <peter@retep.org>
 
 # Default configuration file location

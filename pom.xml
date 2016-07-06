@@ -87,14 +87,12 @@
             <groupId>uk.trainwatch</groupId>
             <artifactId>opendata-core</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>uk.trainwatch</groupId>
             <artifactId>opendata-config</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>provided</scope>
         </dependency>
         
     </dependencies>
@@ -144,7 +142,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+           
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
@@ -160,6 +158,7 @@
                         </resource>
                     </resources>
                 </configuration>
+                <!-- disabled as now done by docker
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -168,6 +167,7 @@
                         </goals>
                     </execution>
                 </executions>
+                -->
             </plugin>
             
         </plugins>
