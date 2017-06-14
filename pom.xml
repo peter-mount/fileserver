@@ -14,6 +14,19 @@
         Docker based application which manages a set of FileSystems and exposes them to HTTP clients.
     </description>
     
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>Area51 Releases</name>
+            <url>https://nexus.area51.onl/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Area51 Snapshots</name>
+            <url>https://nexus.area51.onl/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+    
     <properties>
         <docker.image.prefix>area51</docker.image.prefix>
         <maven.compiler.source>1.8</maven.compiler.source>
