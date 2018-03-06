@@ -2,7 +2,6 @@ buildImage = 'maven:3.2-jdk-8'
 
 def mvn = {
   cmd ->     sh 'docker run -i --rm' +
-        ' --name my-maven-project' +
         ' -v $HOME/.m2/settings.xml:/root/.m2/settings.xml:ro' +
         ' -v "$(pwd)":/work' +
         ' -w /work' +
@@ -15,7 +14,8 @@ properties([
   disableConcurrentBuilds(),
   disableResume(),
   pipelineTriggers([
-    cron('H H * * *')
+    cron('H H * * *'),
+    upstream('/Public/Filesystem/master')
   ])
 ])
 
